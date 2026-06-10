@@ -51,13 +51,15 @@ body {
 }
 
 .brand .wordmark {
-  font-size: 3rem;
-  font-weight: bold;
-  letter-spacing: 0.01em;
+  display: inline-block;
   line-height: 1;
 }
 
-.brand svg.mug { width: 3.4rem; height: 3.4rem; }
+.brand .wordmark img {
+  display: block;
+  height: 120px;
+  width: auto;
+}
 
 .tagline {
   font-style: italic;
@@ -188,7 +190,7 @@ blockquote {
 }
 
 figure.mug-figure { text-align: center; margin: 2rem 0; }
-figure.mug-figure svg { width: 6rem; height: 6rem; }
+figure.mug-figure img { height: 200px; width: auto; }
 figure.mug-figure figcaption {
   font-size: 0.9rem;
   font-style: italic;
@@ -276,8 +278,7 @@ a { color: var(--ink); }
 li { margin: 0.3rem 0; }
 
 @media (max-width: 540px) {
-  .brand .wordmark { font-size: 2.2rem; }
-  .brand svg.mug { width: 2.5rem; height: 2.5rem; }
+  .brand .wordmark img { height: 72px; }
   .masthead .issue-line { font-size: 0.7rem; }
   pre { box-shadow: 3px 3px 0 var(--ink); }
 }
