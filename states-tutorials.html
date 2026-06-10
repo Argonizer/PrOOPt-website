@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrOOPt States — Developer Tutorials</title>
+<meta name="description" content="Structured developer tutorials for PrOOPt States: populations, event physics, evolution, internal loops, reactive governance, and longitudinal reports.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="index.html">
+    <svg class="mug" viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+        <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+        <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+        <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+      </g>
+      <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+      <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+      <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+      <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+    </svg>
+    <span class="wordmark">PrOOPt</span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html">Introduction</a> ·
+    <a href="getting-started.html">Getting Started</a> ·
+    <a href="tutorials.html">Tutorials</a> ·
+    <a href="states-getting-started.html">States: Getting Started</a> ·
+    <a href="states-tutorials.html" aria-current="page">States: Tutorials</a> ·
+    <a href="use-cases.html">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Chapter Five</p>
+    <h1>States — Developer Tutorials</h1>
+    <p class="lede">Six more lessons. By the end, you will have
+    a society, and the society will have a paper trail.</p>
+  </header>
+
+  <section>
+    <h2>Lesson 1 — From One Persona to a Population</h2>
+
+    <p>One guard with feelings is a curiosity. Ten thousand citizens with
+    feelings is an instrument. The generator builder creates populations
+    whose trait distributions you control by construction — pin a trait
+    here, draw another from a normal distribution there, and shape the
+    whole thing with weighted <code>Segment</code>s:</p>
+
+<pre><code>List&lt;Citizen&gt; city = citizens.generate()
+        .limit(50_000)
+        .seed("Adult residents of a mid-size rust-belt metro, 2026")
+        .distribute(Segment.of("suburban homeowners, fixed-rate mortgages", 0.34)
+                .pinTrait("housing_status", "OWNER_FIXED")
+                .normalDistribution("rate_sensitivity", 35, 12)
+                .normalDistribution("institutional_trust", 48, 15)
+                .build())
+        .distribute(Segment.of("urban renters, gig income", 0.22)
+                .pinTrait("employment_mode", "GIG")
+                .normalDistribution("rate_sensitivity", 72, 9)
+                .build())
+        .build();</code></pre>
+
+    <p>Generation is batched, parallel, and rate-limited
+    (<code>.batchSize()</code>, <code>.parallelism()</code>,
+    <code>.rateLimit()</code>), and <code>buildWithResult()</code> hands
+    back a <code>BuildResult</code> with a success rate and any failed
+    batches, because honesty about partial failure is a feature.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 2 — Events with Physics: <code>broadcast</code>, Blast Radius, Rumour</h2>
+
+    <p>In most systems, an event is a message. In PrOOPt States, an event
+    is a <em>disturbance in a medium</em>. When something happens, you
+    declare how far it travels, whom it reaches, and how the truth holds
+    up along the way:</p>
+
+<pre><code>guards.phaseManager().broadcast(
+    crimeWitnessed,
+    EventPipeline.create()
+        .blastRadius(BlastRadius.WITNESSED
+                         .union(BlastRadius.FACTION))
+        .attenuation(AttenuationModel.RUMOUR)
+        .timing(EventTiming.IMMEDIATE)
+        .minSeverity(EventSeverity.WARNING));</code></pre>
+
+    <p>Read it aloud and it is almost a sentence: <em>everyone who saw
+    it, plus their faction, hears about it immediately — and as the story
+    passes from guard to guard, it degrades the way rumours do.</em>
+    <code>BlastRadius</code> scopes propagation (<code>WITNESSED</code>,
+    <code>FACTION</code>, <code>RELATIONSHIP</code>,
+    <code>PROXIMITY</code>); <code>AttenuationModel.RUMOUR</code> applies
+    the classic distortion psychology — details get levelled, the dramatic
+    bits get sharpened, and the rest gets bent to fit what the listener
+    already believed. You can also target a broadcast surgically with a
+    plain predicate: <code>broadcast(event, "district = 'HARBOR'")</code>.</p>
+
+    <aside class="note">
+      <span class="note-title">A word from the mug</span>
+      Yes: misinformation dynamics as a configuration option. Used
+      thoughtfully, this is how you <em>study</em> rumour spread, not
+      how you start one. The audit trail keeps everyone honest.
+    </aside>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 3 — Time as a Force: Evolution Schedules</h2>
+
+    <p>Real entities change even when nothing happens to them. Bread goes
+    stale, grudges soften, attention drifts. The <code>@Persona</code>
+    annotation gives time a job description:</p>
+
+<pre><code>@Persona(
+    value = "An adult resident of a mid-size metro with a realistic "
+          + "financial life, media diet, social ties, and bounded attention.",
+    evolutionSchedule = "@daily",
+    evolutionDescription = "Attention to last week's news decays; lived "
+          + "financial pressure (rent, groceries, rate resets) reasserts "
+          + "itself over headlines."
+)
+public class Citizen { ... }</code></pre>
+
+    <p>On the cron schedule you set, an evolution batch job visits each
+    persona and applies the drift you described — no external stimulus
+    required. Changes land in the history table marked
+    <code>UpdateSource.EVOLUTION</code>, so a citizen who calmed down on
+    her own is never confused with a citizen who was talked down by a
+    neighbour.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 4 — The Internal Loop, or: Entities That Sleep On It</h2>
+
+    <p>This is the strangest and most useful feature in the module.
+    Enable the internal loop and your persona periodically reflects on
+    what it has been through — consolidating memory, revising beliefs —
+    during quiet hours, at a depth you choose:</p>
+
+<pre><code>@Persona(
+    value = "The payments service: latency-sensitive, PCI-scoped, "
+          + "dependent on auth, ledger-db, and the card-network gateway.",
+    internalLoop = true,
+    loopSchedule = "0 0 3 * * *",          // 3 a.m., as is traditional
+    loopDepth = LoopDepth.SHALLOW,
+    loopQuietPeriodHours = 6,
+    loopDescription = "Review the day's digests against my biography. "
+          + "Is anything slowly going wrong that no single day would reveal?"
+)
+public class PaymentsServiceTwin { ... }</code></pre>
+
+    <p>Three controls keep the introspection sensible.
+    <code>LoopDepth</code> sets how far the entity may wander —
+    <code>SHALLOW</code> tidies recent experience, <code>MODERATE</code>
+    reconciles it with existing beliefs, and <code>DEEP</code> is
+    belief-revision territory, best scheduled weekly.
+    <code>loopQuietPeriodHours</code> is the quiet-period gate: no
+    philosophising mid-incident — the loop only runs after things have
+    been calm for the period you set. And every loop-driven change is
+    tagged <code>UpdateSource.INTERNAL_LOOP</code>, so you always know
+    which thoughts were the entity's own.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 5 — Reactive Governance: <code>@OnPersonaEvent</code> and the Veto</h2>
+
+    <p>So far the LLM has been doing all the becoming. Now for the other
+    half of the bargain: deterministic Java gets to watch, react, and —
+    when necessary — refuse. Subscribers fire on threshold crossings and
+    population-level trends:</p>
+
+<pre><code>@PersonaSubscriber
+public class CityAlertService {
+
+    @OnPersonaEvent(persona = GuardNpc.class,
+                    type = PersonaEventType.THRESHOLD_CROSSED,
+                    trait = "suspicion", threshold = 80,
+                    direction = Direction.ABOVE)
+    public void lockdown(TraitChangeEvent&lt;GuardNpc&gt; e) {
+        world.triggerGateLockdown(e);
+    }
+
+    @OnPersonaEvent(persona = GuardNpc.class,
+                    type = PersonaEventType.POPULATION_TREND,
+                    trend = Trend.FALLING)
+    public void watchCollapse(PopulationTrendEvent e) {
+        story.unlockMutinyArc();
+    }
+}</code></pre>
+
+    <p><code>PersonaMetric</code>s aggregate trait values across the
+    population and can emit their own threshold events — an early-warning
+    system over the society's mood. And if the LLM ever proposes a state
+    transition your rules find implausible (morale jumping forty points
+    because someone said good morning), a lifecycle hook can throw
+    <code>PersonaUpdateVetoException</code> and the change simply does not
+    happen. The LLM proposes. Java disposes. It is the same authority
+    split as PrOOPt core, wearing a different hat.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 6 — Reading the Story Back: Reports</h2>
+
+    <p>Every change to every trait of every persona is a source-attributed
+    row in <code>prooopt_persona_history</code>. The reporting layer turns
+    that ledger into narrative instruments:</p>
+
+    <ul>
+      <li><strong><code>EvolutionReport</code></strong> — the longitudinal
+      view of an entity or cohort, including
+      <code>InflectionPoint</code>s (when things changed),
+      <code>TraitCorrelation</code>s (which feelings move together),
+      and <code>ForwardProjection</code>s (where this is heading).</li>
+      <li><strong><code>reportWhere(...)</code></strong> — cohort-level
+      reports over a window, ideal for treatment-versus-control
+      comparisons.</li>
+      <li><strong><code>customReport(prompt)</code></strong> — hand the
+      LLM the population's history and ask for prose: a chronicle of the
+      garrison's morale, a draft postmortem, an analyst's memo.</li>
+    </ul>
+
+<pre><code>EvolutionReport report = guards.report("guard-042",
+        EvolutionWindow.lastDays(30));
+
+report.inflectionPoints()
+      .forEach(p -&gt; log.info("{} — {}", p.when(), p.why()));</code></pre>
+
+    <p>This is the payoff of all that disciplined bookkeeping: you can
+    ask <em>when did this guard stop trusting the player, and what
+    exactly caused it?</em> — and get an answer with timestamps, sources,
+    and reasons rather than a shrug.</p>
+  </section>
+
+  <section>
+    <h2>Graduation, Again</h2>
+
+    <p>You can now mint populations, send events that travel like gossip,
+    let time and reflection do their quiet work, keep deterministic
+    Java's hand on the veto, and read the whole story back as data. To
+    see these parts assembled into things nobody has built before —
+    living game worlds, policy wind tunnels, machine diaries — proceed to
+    the <a href="use-cases.html">Use Cases</a>.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="states-getting-started.html">← States: Getting Started</a>
+  <a href="use-cases.html">Next: Use Cases →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

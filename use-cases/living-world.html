@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The World That Remembers — PrOOPt Use Cases</title>
+<meta name="description" content="The World That Remembers: persistent, society-scale NPC populations built on PrOOPt States.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="../index.html">
+    <svg class="mug" viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+        <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+        <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+        <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+      </g>
+      <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+      <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+      <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+      <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+    </svg>
+    <span class="wordmark">PrOOPt</span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="../index.html">Introduction</a> ·
+    <a href="../getting-started.html">Getting Started</a> ·
+    <a href="../tutorials.html">Tutorials</a> ·
+    <a href="../states-getting-started.html">States: Getting Started</a> ·
+    <a href="../states-tutorials.html">States: Tutorials</a> ·
+    <a href="../use-cases.html" aria-current="page">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Use Case · States No. 1</p>
+    <h1>The World That Remembers</h1>
+    <p class="lede">Persistent, society-scale NPC populations.</p>
+  </header>
+
+  <section>
+    <h2>The Story</h2>
+
+    <p>For forty years, game characters have forgotten you the moment you
+    walked away. The guard who watched you rob the granary greets you the
+    next morning with the same two lines of dialogue he has said since
+    the day the game shipped. He is not a character. He is a doorbell.</p>
+
+    <p>The World That Remembers gives every character in a game world a
+    persistent, LLM-managed inner life. Each NPC is a <code>@Persona</code>
+    POJO whose <code>@Trait</code> fields — morale, suspicion, loyalty,
+    memory — are updated by an LLM and persisted to a database. Guards
+    accumulate grievances. Rumours of the player's deeds spread through
+    taverns, getting less accurate with each retelling. Allegiances shift
+    on schedule. And at night, while the server is quiet, the characters
+    process what happened to them and wake up slightly different.</p>
+
+    <p>The first world that remembers, gossips, holds grudges — and
+    dreams.</p>
+  </section>
+
+  <section>
+    <h2>How It Is Built</h2>
+
+    <p>Three capabilities, never before shipped together, carry the whole
+    design.</p>
+
+    <h3>Gossip with physics</h3>
+
+<pre><code>guards.phaseManager().broadcast(
+    crimeWitnessed,
+    EventPipeline.create()
+        .blastRadius(BlastRadius.WITNESSED
+                         .union(BlastRadius.FACTION))
+        .attenuation(AttenuationModel.RUMOUR)
+        .timing(EventTiming.IMMEDIATE)
+        .minSeverity(EventSeverity.WARNING));</code></pre>
+
+    <p>Information becomes a simulated, decaying medium. Witnesses know
+    what they saw; their faction hears a version of it; and
+    <code>AttenuationModel.RUMOUR</code> applies the classic rumour
+    psychology — details flatten, drama sharpens, and the story bends to
+    fit what each listener already believed. One declarative pipeline,
+    and your world has a grapevine.</p>
+
+    <h3>NPCs that dream</h3>
+
+    <p><code>@Persona(internalLoop = true, loopSchedule = "@daily",
+    loopDepth = LoopDepth.SHALLOW)</code> means that during quiet hours,
+    each character consolidates the day's encounters into trait changes —
+    tagged <code>UpdateSource.INTERNAL_LOOP</code> in the history table.
+    A weekly <code>DEEP</code> loop reaches genuine belief revision: this
+    is where a loyal guard, after a month of unpaid wages and unsettling
+    rumours, quietly stops being a loyal guard.</p>
+
+    <h3>The society is a database</h3>
+
+<pre><code>List&lt;GuardNpc&gt; mutinous = guards.loadWhere(
+    "morale &lt; 20 AND political_sympathy &lt; -40 AND fatigue &gt; 70");</code></pre>
+
+    <p>Designers query disposition the way they query inventory, target
+    events with <code>WHERE</code> clauses, and read
+    <code>EvolutionReport</code>s — inflection points, trait
+    correlations, forward projections — as production telemetry for
+    souls. Deterministic game logic stays in charge through
+    <code>@OnPersonaEvent</code> thresholds:</p>
+
+<pre><code>@PersonaSubscriber
+public class CityAlertService {
+
+    @OnPersonaEvent(persona = GuardNpc.class,
+                    type = PersonaEventType.THRESHOLD_CROSSED,
+                    trait = "suspicion", threshold = 80,
+                    direction = Direction.ABOVE)
+    public void lockdown(TraitChangeEvent&lt;GuardNpc&gt; e) {
+        world.triggerGateLockdown(e);
+    }
+
+    @OnPersonaEvent(persona = GuardNpc.class,
+                    type = PersonaEventType.POPULATION_TREND,
+                    trend = Trend.FALLING)
+    public void watchCollapse(PopulationTrendEvent e) {
+        story.unlockMutinyArc();
+    }
+}</code></pre>
+  </section>
+
+  <section>
+    <h2>Why It Is Unprecedented</h2>
+
+    <p>“Emergent narrative” has historically been a polite euphemism for
+    randomness. Here it stops being one: it is threshold mechanics over
+    LLM-managed psychology, with an audit trail. The designer's
+    relationship to the game changes from scripting characters to
+    <em>authoring a society</em> — writing the laws of how feelings move,
+    then reading the chronicles of what happened. No game-AI stack has
+    ever offered persistent state, social transmission with distortion,
+    and database-grade queryability in one system. This is a game world
+    with a paper trail.</p>
+  </section>
+
+  <section>
+    <h2>The Fine Print</h2>
+
+    <p>The local tier bounds per-NPC eloquence — this design is about
+    <em>state</em> (memory, disposition, society); dialogue generation is
+    a separable concern. LLM-managed psychology can drift implausibly,
+    which is why <code>PersonaUpdateVetoException</code> exists: the
+    designer's hard veto on nonsense. And a society that genuinely
+    evolves can evolve away from the fun — the nightly authorial rules
+    are the steering wheel, and they are mandatory authorship, not
+    optional seasoning.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="boundary-refinery.html">← The Boundary Refinery</a>
+  <a href="policy-wind-tunnel.html">Next: The Policy Wind Tunnel →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

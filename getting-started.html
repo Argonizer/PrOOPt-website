@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Getting Started — PrOOPt</title>
+<meta name="description" content="Get started with PrOOPt: requirements, the Maven dependency, your first @PromptFunction, and your first orchestrated run.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="index.html">
+    <svg class="mug" viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+        <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+        <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+        <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+      </g>
+      <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+      <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+      <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+      <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+    </svg>
+    <span class="wordmark">PrOOPt</span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html">Introduction</a> ·
+    <a href="getting-started.html" aria-current="page">Getting Started</a> ·
+    <a href="tutorials.html">Tutorials</a> ·
+    <a href="states-getting-started.html">States: Getting Started</a> ·
+    <a href="states-tutorials.html">States: Tutorials</a> ·
+    <a href="use-cases.html">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Chapter Two</p>
+    <h1>Getting Started with PrOOPt</h1>
+    <p class="lede">From an empty <code>pom.xml</code> to your first
+    governed LLM call, in roughly one cup of coffee.</p>
+  </header>
+
+  <section>
+    <h2>What You Will Need</h2>
+
+    <p>Not much, as it happens. PrOOPt runs anywhere Java runs, and the
+    local model runs on a CPU like everybody did in the old days.</p>
+
+    <table>
+      <thead>
+        <tr><th>Resource</th><th>Requirement</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Java</td><td>17+ for the local runtime; the project baseline is <strong>Java 21</strong>, because the core orchestrator uses virtual threads</td></tr>
+        <tr><td>RAM</td><td>LOCAL tier: 3 GB minimum (Phi-3.5 Mini INT4 ≈ 2 GB model + JVM). Cloud-only: 512 MB</td></tr>
+        <tr><td>GPU</td><td>Not required — CPU inference via ONNX Runtime</td></tr>
+        <tr><td>OS</td><td>Any (x86-64 or ARM64); native libraries are auto-selected</td></tr>
+        <tr><td>Maven</td><td>3.9+</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>One Dependency, Four Modules</h2>
+
+    <p>PrOOPt ships as a small family of Maven artifacts. You will almost
+    always start with <code>prooopt-core</code>, then add a runtime for
+    wherever you want your tokens generated.</p>
+
+    <table>
+      <thead>
+        <tr><th>Module</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>prooopt-core</code></td><td>Annotations, AOP, autoboxer, orchestrator, stream API</td></tr>
+        <tr><td><code>prooopt-runtime-local</code></td><td>ONNX Runtime on-device inference — nothing leaves the JVM</td></tr>
+        <tr><td><code>prooopt-runtime-cloud</code></td><td>Anthropic + OpenAI cloud adapters</td></tr>
+        <tr><td><code>prooopt-examples</code></td><td>Worked examples: Legal Analyzer, Linear System, BODMAS solver</td></tr>
+      </tbody>
+    </table>
+
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;io.github.argonizer&lt;/groupId&gt;
+    &lt;artifactId&gt;prooopt-core&lt;/artifactId&gt;
+    &lt;version&gt;${prooopt.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;io.github.argonizer&lt;/groupId&gt;
+    &lt;artifactId&gt;prooopt-runtime-cloud&lt;/artifactId&gt;
+    &lt;version&gt;${prooopt.version}&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Your First <code>@PromptFunction</code></h2>
+
+    <p>Here is the entire trick, and we will be honest about how strange
+    it looks the first time: you write a method, and the method returns
+    <code>null</code>. On purpose. Forever.</p>
+
+<pre><code>public class ContractReader {
+
+    @PromptFunction(
+        model = ModelTier.LOCAL,
+        prompt = "Extract the contract date: {text}",
+        description = "Extracts signing date"
+    )
+    public LocalDate extractDate(String text) {
+        text = text.trim(); // optional pre-processing
+        return null;        // PrOOPt takes over
+    }
+}</code></pre>
+
+    <p>When the call reaches that <code>return null</code>, PrOOPt
+    intercepts it, fills the prompt template with your arguments, appends
+    format instructions derived from your return type, routes the prompt
+    to the declared model tier, and converts the model's reply into a real
+    <code>LocalDate</code>. To the rest of your codebase, this is just a
+    method. It can be mocked, wrapped, profiled and unit-tested like any
+    other method. That is rather the point.</p>
+
+    <aside class="note">
+      <span class="note-title">A word from the mug</span>
+      The <code>null</code> is not laziness. It is a promise: <em>this
+      method body will never secretly compute the answer behind the
+      model's back, and the model will never compute behind yours.</em>
+    </aside>
+  </section>
+
+  <section>
+    <h2>Pick a Tier (or Let the Router Do It)</h2>
+
+    <p>Each function carries its own model tier. That is per-function
+    governance, not per-application guesswork.</p>
+
+    <table>
+      <thead>
+        <tr><th><code>ModelTier</code></th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>LOCAL</code></td><td>On-device inference via ONNX Runtime — nothing leaves the JVM</td></tr>
+        <tr><td><code>CLOUD_FAST</code></td><td>Cloud API, cheap and fast model</td></tr>
+        <tr><td><code>CLOUD_ADVANCED</code></td><td>Cloud API, flagship model</td></tr>
+        <tr><td><code>AUTO</code></td><td>The router picks a tier from the estimated token count</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Credentials, the Boring (Important) Way</h2>
+
+    <p>API keys are never hardcoded. Set them as environment variables or
+    system properties, and reference them from
+    <code>prooopt.yaml</code>:</p>
+
+<pre><code># prooopt.yaml
+models:
+  cloud:
+    apiKey: ${ANTHROPIC_API_KEY}</code></pre>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Your First Orchestrated Run</h2>
+
+    <p>Wire it all together with the builder. Register your annotated
+    instances, hand the runtime an input, and let the orchestrator plan
+    the work.</p>
+
+<pre><code>LegalAnalyzer analyzer = new LegalAnalyzer();
+
+PrOOPtRuntime prooopt = PrOOPt.builder()
+        .router(new CloudModelRouter(anthropicAdapter))
+        .registerInstance(analyzer)
+        .build();
+
+Object result = prooopt.orchestrate(analyzer, contractText);</code></pre>
+
+    <p>And here is what you will see in the logs — every decision, every
+    tier, every masked argument, every estimated cent:</p>
+
+<pre><code>[PROOOPT][PROMPT_FUNCTION][START] traceId=abc123 function=generateSummary
+        tier=CLOUD_ADVANCED inputs={text=***CONTRACT-TEXT***}
+[PROOOPT][PROMPT_FUNCTION][END]   traceId=abc123 function=generateSummary
+        durationMs=842 result=This mutual non-disclosure...
+[PROOOPT][ORCHESTRATOR][SUMMARY]  traceId=abc123 totalMs=1204 functions=5
+        code=2 local=2 cloud=1 tokens=~312 estCost=$0.0020</code></pre>
+
+    <p>That last line deserves a moment of appreciation. Five functions
+    ran. Two were plain Java and cost nothing. Two ran on the local model
+    and cost electricity. One went to the cloud and cost a fifth of a
+    cent. You did not have to instrument any of this. The audit trail is a
+    by-product of execution, not a chore you do afterwards.</p>
+  </section>
+
+  <section>
+    <h2>Where to Next?</h2>
+
+    <p>You now have a working PrOOPt installation and one slightly
+    miraculous method that returns <code>null</code> and means it. The
+    <a href="tutorials.html">Tutorials</a> walk through the rest of the
+    toolbox, one short lesson at a time: deterministic tools, the
+    orchestrator's DAG plans, pipelines, plan caching, and keeping
+    secrets secret.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="index.html">← Introduction</a>
+  <a href="tutorials.html">Next: Tutorials →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>
