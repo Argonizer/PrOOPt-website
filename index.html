@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrOOPt — Object-Oriented Prompt Engineering for Java</title>
+<meta name="description" content="PrOOPt is an open-source Java library that applies Object-Oriented principles to LLM prompt engineering.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="index.html">
+    <svg class="mug" viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+        <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+        <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+        <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+      </g>
+      <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+      <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+      <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+      <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+    </svg>
+    <span class="wordmark">PrOOPt</span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html" aria-current="page">Introduction</a> ·
+    <a href="getting-started.html">Getting Started</a> ·
+    <a href="tutorials.html">Tutorials</a> ·
+    <a href="states-getting-started.html">States: Getting Started</a> ·
+    <a href="states-tutorials.html">States: Tutorials</a> ·
+    <a href="use-cases.html">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Chapter One</p>
+    <h1>The What, the Why and the How</h1>
+    <p class="lede">In which a coffee mug learns to delegate.</p>
+  </header>
+
+  <section>
+    <p>PrOOPt is an open-source Java library that applies Object-Oriented
+    principles to LLM prompt engineering. Instead of handing your entire
+    process to a frontier model and hoping for the best, PrOOPt lets you
+    declare — at the function level — exactly where AI has authority and
+    where deterministic code takes over.</p>
+
+    <p>Think of it as dependency injection for intelligence. You wire the
+    model into specific annotated functions, not into your entire
+    application. Every <code>@PromptFunction</code> is a governance
+    decision. Every <code>@CodeFunction</code> is a line the LLM cannot
+    cross. Every orchestrator plan is auditable from the first step to the
+    last.</p>
+
+    <p>The philosophy is simple: <strong>LLMs should reason about problems,
+    not compute answers.</strong> When you forbid computation, you force
+    genuine reasoning.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>The Closed-Book Exam</h2>
+
+    <p>Here is a small story about a student. (Every good library starts
+    with a small story about a student.)</p>
+
+    <p>When a student sits an open-book exam, they find the nearest worked
+    example, map the new problem onto it, and substitute values.
+    Understanding is optional. When the same student sits a closed-book
+    exam and must show their work, understanding becomes mandatory. They
+    must identify the problem class, recall the applicable theorem, derive
+    each step, and verify the result. The constraint does not limit
+    intelligence — it forces it.</p>
+
+    <p>A language model is the world's most well-read open-book student.
+    Ask it to <em>explain</em> Gaussian elimination and it will do so with
+    clarity and precision. Ask it to <em>perform</em> Gaussian elimination
+    on a novel system of equations, and it does not reason through the
+    steps. It predicts them. Often the answer is correct. Sometimes it is
+    not. And critically — the model cannot tell the difference.</p>
+
+    <blockquote>PrOOPt closes the book.</blockquote>
+
+    <p>By making computation structurally impossible for the LLM — by
+    routing all arithmetic, all matrix operations, all deterministic logic
+    to <code>@CodeFunction</code> methods that the LLM can invoke but
+    cannot replicate — PrOOPt removes the interpolation shortcut entirely.
+    The LLM cannot recall an answer. It must reason toward one.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Three Annotations to Remember</h2>
+
+    <p>That is the whole cast. Three annotations, each with a clear job and
+    no ambitions about anyone else's.</p>
+
+    <h3>① <code>@PromptFunction</code> — the prompt as a SOLID function</h3>
+
+    <p>An LLM-backed method that behaves like ordinary Java. Write the
+    method signature, declare the prompt template, and return
+    <code>null</code>. PrOOPt intercepts the call, enriches the prompt,
+    routes it to the declared model tier, and autoboxes the model's answer
+    into whatever Java type you declared. Be it a <code>LocalDate</code>,
+    a POJO or an enum — your return type is the contract, and PrOOPt
+    honours it.</p>
+
+<pre><code>@PromptFunction(
+    model = ModelTier.LOCAL,
+    prompt = "Extract the contract date: {text}",
+    description = "Extracts signing date"
+)
+public LocalDate extractDate(String text) {
+    text = text.trim(); // optional pre-processing
+    return null;        // PrOOPt takes over
+}</code></pre>
+
+    <h3>② <code>@CodeFunction</code> — the line the LLM cannot cross</h3>
+
+    <p>Marks a method as deterministic Java. It has a full implementation
+    and is registered in the orchestrator's tool registry. The LLM knows it
+    exists. It can invoke it. It can never replace it. Use it for math,
+    validation, formatting, business rules, and everything deterministic.
+    The compiler doesn't hallucinate. Neither does
+    <code>Math.pow()</code>.</p>
+
+<pre><code>@CodeFunction(
+    description = "Computes compound interest"
+)
+public static double compoundInterest(
+        double principal, double rate, int years) {
+    return principal * Math.pow(1 + rate, years);
+}</code></pre>
+
+    <h3>③ <code>@PromptOrchestrator</code> — the brain that may not do arithmetic</h3>
+
+    <p>The autonomous agent brain. It receives your system prompt and a
+    registry of every discovered tool, then generates a DAG execution plan
+    — which functions to call, in what order, and which to run in parallel.
+    The LLM reasons about the problem structure. It does not compute. It
+    <em>cannot</em> compute. That constraint is not a limitation — it is
+    the architecture of reliable intelligence.</p>
+
+<pre><code>@PromptOrchestrator(
+    prompt = "You are a legal analyst.",
+    planMode = PlanMode.DYNAMIC,
+    model = ModelTier.CLOUD_ADVANCED,
+    parallel = true
+)
+@PromptFunctionScan
+public class LegalAnalyzer extends BaseOrchestrator {
+    public static void main(String[] args) {
+        PrOOPt.run(LegalAnalyzer.class, args);
+    }
+}</code></pre>
+
+    <aside class="note">
+      <span class="note-title">A word from the mug</span>
+      The orchestrator thinks. The <code>@CodeFunction</code> executes.
+      The audit log proves it. Everyone stays in their lane, and traffic
+      flows beautifully.
+    </aside>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>And Then the Mug Got a Sibling</h2>
+
+    <p><strong>PrOOPt States</strong> takes the same idea — natural
+    language as a governed, auditable contract — and applies it to
+    <em>state</em>. Annotate a plain Java object with
+    <code>@Persona</code>, describe its fields with <code>@Trait</code>,
+    and the LLM manages how that entity changes over time: in response to
+    events, on schedules, even during quiet hours when it sits alone with
+    its thoughts. Everything is persisted, queryable, and recorded in a
+    history table with a named cause.</p>
+
+    <p>Game characters that remember. Synthetic citizens that form
+    opinions. Services that keep diaries. It sounds whimsical, and it is —
+    but it is whimsy with a database schema. Start with
+    <a href="states-getting-started.html">States: Getting Started</a>.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>The Practical Bits</h2>
+
+    <p>Built for Java 17+ (the project baseline is Java 21, because the
+    orchestrator likes its virtual threads). Ships with an embedded ONNX
+    Runtime for local inference — nothing leaves the JVM unless you say so.
+    Zero external processes. One Maven dependency. MIT licence.</p>
+
+    <p>Because great ideas often have humble beginnings.</p>
+
+    <figure class="mug-figure">
+      <svg viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug, watching you" xmlns="http://www.w3.org/2000/svg">
+        <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+          <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+          <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+          <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+        </g>
+        <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+        <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+        <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+        <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+        <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+        <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+        <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+        <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+      </svg>
+      <figcaption>The mug sees everything. The mug logs everything.</figcaption>
+    </figure>
+
+    <p>PrOOPt doesn't ask you to trust the framework with your data. It
+    asks you to read three annotations and verify for yourself.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Next page">
+  <span></span>
+  <a href="getting-started.html">Next: Getting Started →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iron Interlock — PrOOPt Use Cases</title>
+<meta name="description" content="Iron Interlock: governed conversational autonomy for safety-critical industrial control, built on PrOOPt core.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="../index.html">
+    <svg class="mug" viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+        <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+        <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+        <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+      </g>
+      <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+      <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+      <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+      <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+    </svg>
+    <span class="wordmark">PrOOPt</span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="../index.html">Introduction</a> ·
+    <a href="../getting-started.html">Getting Started</a> ·
+    <a href="../tutorials.html">Tutorials</a> ·
+    <a href="../states-getting-started.html">States: Getting Started</a> ·
+    <a href="../states-tutorials.html">States: Tutorials</a> ·
+    <a href="../use-cases.html" aria-current="page">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Use Case · Core No. 1</p>
+    <h1>Iron Interlock</h1>
+    <p class="lede">Governed conversational autonomy for
+    safety-critical industrial control.</p>
+  </header>
+
+  <section>
+    <h2>The Story</h2>
+
+    <p>There is a reason large language models are effectively banned
+    from power plants, water treatment facilities, and chemical
+    processing lines, and it is a good reason: nobody has had a way to
+    <em>bound</em> what the model is allowed to do. Every “AI for
+    industry” vendor stops at read-only dashboards, because the moment
+    actuation appears, the only thing standing between the model and a
+    destructive action is prompt quality — which regulators, insurers,
+    and plant operators correctly treat as no barrier at all.</p>
+
+    <p>Iron Interlock inverts the problem. Instead of describing the
+    safety envelope <em>to</em> the model and hoping it listens, the
+    envelope is made physically unavailable to violate. Actuation exists
+    only inside <code>@CodeFunction</code> methods whose bodies clamp,
+    rate-limit, interlock, and verify every request before anything
+    touches a controller. “What the AI may do” stops being a policy
+    document and becomes a compile-time, JVM-enforced property.</p>
+
+    <blockquote>The model proposes. The interlock disposes.</blockquote>
+  </section>
+
+  <section>
+    <h2>How It Is Built</h2>
+
+    <p>The three authority zones map cleanly onto the plant:</p>
+
+    <ul>
+      <li><strong>The deterministic zone</strong> is the safety envelope
+      itself: pure Java <code>@CodeFunction</code> methods are the only
+      path to actuation.</li>
+      <li><strong>The bounded AI zone</strong> runs on
+      <code>ModelTier.LOCAL</code> — ONNX inference inside the JVM on the
+      OT gateway. Zero bytes leave the network, which keeps the air gap
+      (and the data-diode topology) intact.</li>
+      <li><strong>The elevated AI zone</strong>
+      (<code>CLOUD_ADVANCED</code>) never touches live operations. It
+      studies de-identified archives offline and writes playbooks for the
+      local model — crossing the boundary as <em>reviewed artifacts</em>,
+      not API responses.</li>
+    </ul>
+
+<pre><code>public class CompressorStationAdvisor {
+
+    @CodeFunction(description = "Clamp a requested setpoint change to "
+            + "the certified rate-of-change envelope and the absolute "
+            + "min/max for this asset.")
+    public SetpointCommand clampSetpoint(String assetId, double requested) { /* … */ }
+
+    @CodeFunction(description = "Verify interlock preconditions for a "
+            + "valve transition: upstream pressure, permissive chain, "
+            + "lockout/tagout registry.")
+    public InterlockVerdict checkInterlocks(String valveId, ValveTarget target) { /* … */ }
+}</code></pre>
+
+<pre><code>@PromptOrchestrator(
+        prompt = "Assist the control-room operator. Diagnose, propose, "
+               + "and execute only through registered functions.",
+        model = ModelTier.LOCAL,
+        planMode = PlanMode.STATIC,
+        planCacheStrategy = PlanCacheStrategy.INTENT,
+        allowDynamic = false
+)
+public OperatorResponse assist(String operatorUtterance) { return null; }</code></pre>
+
+    <p>Note <code>allowDynamic = false</code>. In most deployments that
+    flag is an optimisation choice; here it is a governance statement.
+    The tool surface is frozen at deploy time and enumerable in a single
+    code review. <code>PlanCacheStrategy.INTENT</code> collapses an alarm
+    flood into a handful of intent classes, and <code>@SensitiveData</code>
+    keeps plant identifiers out of the audit trail — which, for the
+    record, doubles as the flight recorder a safety case has always
+    wanted.</p>
+  </section>
+
+  <section>
+    <h2>Why It Is Unprecedented</h2>
+
+    <p>Safety becomes a property of the architecture, not the prompt. A
+    regulator does not have to evaluate the model's intentions; they
+    evaluate a finite, frozen list of Java methods, each of which
+    enforces its own physics. That is a safety case in a form engineers
+    already know how to audit. Nobody has been able to offer that for an
+    LLM in the loop of physical infrastructure before, because no other
+    framework makes the boundary structural.</p>
+  </section>
+
+  <section>
+    <h2>The Fine Print</h2>
+
+    <p>Honesty corner. The local tier bounds linguistic sophistication —
+    the design compensates with pre-digestion and compiled playbooks, not
+    model heroics. This is decision <em>support</em> with governed
+    micro-actuation; it does not replace the safety instrumented system.
+    And the human review gate on playbooks is load-bearing: the
+    architecture makes that gate cheap, not optional. Remove it and a
+    safety case quietly turns back into a hope.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="../use-cases.html">← All use cases</a>
+  <a href="promptjit.html">Next: PromptJIT →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

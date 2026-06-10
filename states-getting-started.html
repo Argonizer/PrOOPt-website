@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrOOPt States — Getting Started</title>
+<meta name="description" content="Get started with PrOOPt States: LLM-managed, database-persisted entity state via @Persona and @Trait.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="index.html">
+    <svg class="mug" viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+        <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+        <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+        <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+      </g>
+      <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+      <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+      <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+      <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+    </svg>
+    <span class="wordmark">PrOOPt</span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html">Introduction</a> ·
+    <a href="getting-started.html">Getting Started</a> ·
+    <a href="tutorials.html">Tutorials</a> ·
+    <a href="states-getting-started.html" aria-current="page">States: Getting Started</a> ·
+    <a href="states-tutorials.html">States: Tutorials</a> ·
+    <a href="use-cases.html">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Chapter Four</p>
+    <h1>PrOOPt States — Getting Started</h1>
+    <p class="lede">In which objects acquire inner lives,
+    and the inner lives acquire a database schema.</p>
+  </header>
+
+  <section>
+    <h2>What Is PrOOPt States?</h2>
+
+    <p>PrOOPt core governs what an LLM may <em>do</em>. PrOOPt States
+    governs what an LLM may <em>remember and become</em>.</p>
+
+    <p>Here is the idea in one breath. You write a plain Java object. You
+    describe what it <em>is</em> in a sentence on a <code>@Persona</code>
+    annotation. You describe each of its fields in a sentence on a
+    <code>@Trait</code> annotation. From then on, an LLM manages how those
+    fields change — in response to events you send, on schedules you set,
+    and even during quiet hours when the entity sits alone and reflects.
+    Every change is persisted to ordinary database tables, every change
+    has a recorded source, and the whole population is queryable with
+    SQL-style predicates.</p>
+
+    <p>The developer describes what the entity is. The LLM decides what it
+    becomes. The database remembers everything either of them did.</p>
+
+    <aside class="note">
+      <span class="note-title">A word from the mug</span>
+      The key sentence in the whole module is hiding in the
+      <code>@Trait</code> Javadoc: <em>“the description is the rule.”</em>
+      You are not writing documentation. You are writing the
+      state-transition logic itself — in prose, versioned like code.
+    </aside>
+  </section>
+
+  <section>
+    <h2>The Dependency</h2>
+
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;io.github.argonizer&lt;/groupId&gt;
+    &lt;artifactId&gt;prooopt-states&lt;/artifactId&gt;
+    &lt;version&gt;${prooopt.version}&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Or, for Spring Boot users who enjoy nice things: --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;io.github.argonizer&lt;/groupId&gt;
+    &lt;artifactId&gt;prooopt-states-spring-boot-starter&lt;/artifactId&gt;
+    &lt;version&gt;${prooopt.version}&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+
+    <p>The starter wires the persona engine, the schedulers for evolution
+    and internal loops, and the event pipeline into your Spring context.
+    Personas persist via JPA by default
+    (<code>@Persona(store = Store.JPA)</code>), and all personas share the
+    same five physical tables — including
+    <code>prooopt_persona_history</code>, which will quietly become your
+    favourite table.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Your First Persona</h2>
+
+    <p>Let us hire a castle guard. He is not a chatbot. He is state.</p>
+
+<pre><code>@Persona(
+    value = "A city guard in a medieval fortress town. Dutiful but "
+          + "underpaid, loyal to his captain, suspicious of strangers, "
+          + "and fond of gossip on the night shift.",
+    evolutionSchedule = "@daily",
+    evolutionDescription = "Fatigue accumulates on long shifts and "
+          + "recovers on rest days. Old grievances fade slowly unless "
+          + "refreshed. Morale drifts toward the company's mood."
+)
+public class GuardNpc {
+
+    @PersonaId
+    private String guardId;
+
+    @Trait("Morale from 0 (deserting at dawn) to 100 (would die "
+         + "for the captain). Rises with pay and victories; falls "
+         + "with hunger, fear, and unpaid wages.")
+    private int morale;
+
+    @Trait("Suspicion toward the player, 0–100. Rises sharply when "
+         + "crimes are witnessed; rises slowly on rumours; decays "
+         + "only with time and good deeds.")
+    private int suspicion;
+
+    @Trait(value = "Private running memory of recent encounters, "
+         + "in the guard's own words.", index = false)
+    private String memory;
+}</code></pre>
+
+    <p>Read those <code>@Trait</code> descriptions again. Each one is a
+    miniature law of physics for that field. “Rises sharply when crimes
+    are witnessed; decays only with time” is not a comment — it is the
+    contract the LLM is held to every time it updates the field. Rich,
+    specific descriptions produce better state transitions. Vague ones
+    produce a guard with the emotional consistency of a weather vane.</p>
+  </section>
+
+  <section>
+    <h2>Bring Him to Life</h2>
+
+    <p>The <code>PersonaStateEngine</code> has a small, honest lifecycle:
+    initialise, update, evolve, run a loop, retire, restore, load.</p>
+
+<pre><code>GuardNpc guard = new GuardNpc();
+engine.initialise(guard, meta, "guard-042",
+        "A veteran of the northern gate, ten years of service");
+
+// Something happens in the world:
+PersonaStateDiff diff = engine.update(guard, meta,
+        "The player was seen picking the lock on the granary door "
+      + "at midnight.");
+
+System.out.println(guard.getSuspicion()); // noticeably higher
+System.out.println(diff);                 // exactly what changed, and why</code></pre>
+
+    <p>The engine builds a prompt from the persona description, the trait
+    contracts and the event; the LLM proposes new values; the engine
+    parses, validates, writes the fields, and records the change in
+    <code>prooopt_persona_history</code> with its source. You get back a
+    <code>PersonaStateDiff</code> — the before, the after, and the
+    reasoning. No mystery, no vibes. Rows.</p>
+  </section>
+
+  <section>
+    <h2>What “Persisted and Queryable” Buys You</h2>
+
+    <p>Because every trait is indexed by default, a population of personas
+    can be queried like inventory:</p>
+
+<pre><code>List&lt;GuardNpc&gt; disgruntled =
+        guards.loadWhere("morale &lt; 20 AND suspicion &gt; 70");</code></pre>
+
+    <p>That single line is the difference between PrOOPt States and a
+    pile of chat transcripts. State lives in tables. History has source
+    attribution — was this change caused by an external event, social
+    contagion, scheduled evolution, or the entity's own internal
+    reflection? (<code>UpdateSource</code> knows.) And large text blobs
+    like narrative memory can opt out of indexing with
+    <code>index&nbsp;=&nbsp;false</code>, because nobody needs a B-tree
+    over a guard's diary.</p>
+  </section>
+
+  <section>
+    <h2>Where to Next?</h2>
+
+    <p>You have one guard with feelings and a history table. The
+    <a href="states-tutorials.html">States Tutorials</a> scale this up:
+    generating whole populations with census-shaped distributions,
+    broadcasting events with blast radii and rumour distortion, scheduled
+    evolution, internal thought loops, deterministic veto power, and the
+    longitudinal reports that make it all legible.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="tutorials.html">← Tutorials</a>
+  <a href="states-tutorials.html">Next: States — Tutorials →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

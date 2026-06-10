@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Boundary Refinery — PrOOPt Use Cases</title>
+<meta name="description" content="The Boundary Refinery: a reasoning copilot for proprietary science — frontier models reasoning on top of knowledge they can never contain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="../index.html">
+    <svg class="mug" viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+        <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+        <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+        <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+      </g>
+      <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+      <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+      <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+      <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+    </svg>
+    <span class="wordmark">PrOOPt</span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="../index.html">Introduction</a> ·
+    <a href="../getting-started.html">Getting Started</a> ·
+    <a href="../tutorials.html">Tutorials</a> ·
+    <a href="../states-getting-started.html">States: Getting Started</a> ·
+    <a href="../states-tutorials.html">States: Tutorials</a> ·
+    <a href="../use-cases.html" aria-current="page">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Use Case · Core No. 3</p>
+    <h1>The Boundary Refinery</h1>
+    <p class="lede">A reasoning copilot for proprietary science.</p>
+  </header>
+
+  <section>
+    <h2>The Story</h2>
+
+    <p>The most valuable computational knowledge in the world economy is,
+    in a word, radioactive. Pharmacokinetic models refined over decades
+    of trials. Catastrophe models that price hurricane risk. Trading
+    signals, yield models, actuarial formulas. Publishing them destroys
+    their value; pasting them into a cloud prompt may violate the law.
+    So this knowledge and frontier AI have never been able to touch —
+    and when they try, the model simply hallucinates a confident
+    imitation.</p>
+
+    <p>The standard playbook says: give the model the knowledge.
+    Fine-tune it in, retrieve it with RAG, paste it into context. For
+    <em>executable</em> knowledge, all three are category errors.
+    Fine-tuning teaches the model to imitate a risk model — an
+    approximation of something whose entire value is exactness. RAG
+    retrieves a description, and then the LLM predicts the computation —
+    precisely the failure mode PrOOPt exists to prevent. Context-pasting
+    is simultaneously a leak and a lie.</p>
+
+    <p>The Boundary Refinery inverts the playbook: <strong>the model
+    never receives the knowledge at all. It receives an
+    interface.</strong></p>
+  </section>
+
+  <section>
+    <h2>How It Is Built</h2>
+
+    <p>Proprietary simulators are registered as
+    <code>@CodeFunction</code>s — a knowledge injection layer the model
+    can invoke but never inspect. Reasoning <em>about</em> a tool is
+    comfortably within the model's distribution, even when the tool's
+    contents are permanently outside it.</p>
+
+<pre><code>public class DoseOptimizationCopilot {
+
+    @CodeFunction(description = "Proprietary population-PK simulation: "
+            + "steady-state concentration-time profile for a dosing regimen "
+            + "given covariates. Validated model vX.Y; returns AUC, Cmax, Ctrough.")
+    public ExposureProfile simulateExposure(Regimen regimen, Covariates covariates) { /* … */ }
+
+    @PromptFunction(model = ModelTier.LOCAL,
+            prompt = "Extract structured covariates (age, weight, eGFR, "
+                   + "comedications, organ function) from this clinical note: {note}")
+    public Covariates extractCovariates(
+            @SensitiveData(label = "***CLINICAL-NOTE***") String note) { return null; }
+
+    @PromptFunction(model = ModelTier.CLOUD_ADVANCED, thinking = true,
+            prompt = "Design a simulation campaign to answer: {question}. You may "
+                   + "only propose calls to the registered simulators...")
+    public CampaignPlan planCampaign(String question,
+                                     CovariateSummary deidentified) { return null; }
+}</code></pre>
+
+<pre><code>@PromptOrchestrator(
+        prompt = "Answer dose-optimisation questions strictly via registered simulators.",
+        planMode = PlanMode.STATIC,
+        planCacheStrategy = PlanCacheStrategy.INTENT,
+        parallel = true
+)
+public Recommendation advise(String clinicianQuestion) { return null; }</code></pre>
+
+    <p>The division of labour is strict. <code>ModelTier.LOCAL</code>
+    handles every step that touches raw sensitive data, inside the JVM.
+    The cloud tier sees only de-identified, schema-shaped summaries, and
+    contributes what it is genuinely good at: fluent scientific reasoning
+    about which validated computations to run and what the results mean.
+    Simulation grids fan out in parallel waves on virtual threads, and
+    every simulator invocation — version, input hash, interpretation —
+    lands in the audit trail, ready to staple to a regulatory
+    submission.</p>
+  </section>
+
+  <section>
+    <h2>Why It Is Unprecedented</h2>
+
+    <p>Every “chat with your data” product ships your data to the model.
+    This is “chat with your models” — and the models never leave home.
+    The training-data boundary is permanent, and the Refinery treats it
+    not as a problem to solve but as a seam to exploit. The expert gets
+    frontier-AI fluency attached to ground truth she is professionally
+    accountable for, rather than substituting for it. And when the
+    compliance question arrives, the answer is short: the AI never
+    computed anything. It decided which of our validated computations to
+    run, and explained the results — and here is the complete record.</p>
+  </section>
+
+  <section>
+    <h2>The Fine Print</h2>
+
+    <p>The Refinery's outputs are exactly as good as the registered
+    simulators; it amplifies validated science and validated mistakes
+    with equal enthusiasm, so model governance remains a human discipline
+    — now perfectly recorded. The cloud planner can propose wasteful
+    campaigns; cost guards belong in configuration and deterministic
+    constraint checkers, not in trust. And this is decision support for
+    qualified professionals, not autonomous prescribing — the
+    recommendation type should say so on the tin.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="promptjit.html">← PromptJIT</a>
+  <a href="living-world.html">Next: The World That Remembers →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

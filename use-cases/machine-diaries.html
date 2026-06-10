@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Machine Diaries — PrOOPt Use Cases</title>
+<meta name="description" content="Machine Diaries: anthropomorphic observability for distributed systems — the biography layer observability never had.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="../index.html">
+    <svg class="mug" viewBox="0 0 100 100" role="img" aria-label="The PrOOPt mug" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round">
+        <path d="M37 6 q-5 7 0 13 q5 6 0 12"/>
+        <path d="M51 3 q-5 7 0 13 q5 6 0 13"/>
+        <path d="M65 6 q-5 7 0 13 q5 6 0 12"/>
+      </g>
+      <rect x="22" y="40" width="54" height="48" rx="10" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="27" ry="8" fill="#fff" stroke="#000" stroke-width="4"/>
+      <ellipse cx="49" cy="40" rx="19" ry="4.5" fill="#000"/>
+      <path d="M76 52 h6 a13 13 0 0 1 0 26 h-6" fill="none" stroke="#000" stroke-width="4"/>
+      <ellipse cx="38" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="60" cy="64" rx="9.5" ry="12" fill="#fff" stroke="#000" stroke-width="3.5"/>
+      <ellipse cx="41" cy="66" rx="4.5" ry="6" fill="#000"/>
+      <ellipse cx="63" cy="66" rx="4.5" ry="6" fill="#000"/>
+    </svg>
+    <span class="wordmark">PrOOPt</span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="../index.html">Introduction</a> ·
+    <a href="../getting-started.html">Getting Started</a> ·
+    <a href="../tutorials.html">Tutorials</a> ·
+    <a href="../states-getting-started.html">States: Getting Started</a> ·
+    <a href="../states-tutorials.html">States: Tutorials</a> ·
+    <a href="../use-cases.html" aria-current="page">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Use Case · States No. 3</p>
+    <h1>Machine Diaries</h1>
+    <p class="lede">Anthropomorphic observability for distributed systems.</p>
+  </header>
+
+  <section>
+    <h2>The Story</h2>
+
+    <p>Observability has three pillars — metrics, logs, traces — and one
+    blind spot: <strong>biography</strong>. Dashboards tell you what a
+    service is doing. Nothing tells you what it has been
+    <em>through</em>.</p>
+
+    <p>The knowledge that “the search cluster has been flaky since v41,
+    never fully recovered, and gets worse under cron pressure” lives
+    nowhere in your systems. It lives in people. It decays in Slack. The
+    senior SRE who remembered why cart-service can't be trusted on
+    Mondays quit last spring — and took the only copy of that knowledge
+    with her.</p>
+
+    <p>Machine Diaries gives every service a <code>@Persona</code> twin
+    whose <code>@Trait</code> fields capture qualitative operational
+    state — degradation suspicion, confidence in dependencies, deploy
+    anxiety, a running narrative memory — maintained by an LLM from
+    deterministic telemetry digests, persisted with full history, and
+    queryable like inventory. The fleet becomes a population. Postmortems
+    are <em>read</em>, not reconstructed.</p>
+  </section>
+
+  <section>
+    <h2>How It Is Built</h2>
+
+    <h3>The twin and its trait contracts</h3>
+
+<pre><code>@Persona(value = "The payments service: latency-sensitive, PCI-scoped, "
+                + "dependent on auth, ledger-db, and the card-network gateway.",
+    evolutionSchedule = "@weekly",
+    evolutionDescription = "Unexercised code paths and unrotated credentials "
+                        + "decay confidence; a quiet week without incident "
+                        + "slowly heals trust.",
+    internalLoop = true, loopSchedule = "0 0 3 * * *",
+    loopDepth = LoopDepth.SHALLOW, loopQuietPeriodHours = 6,
+    loopDescription = "Review the day's digests against my biography. Is "
+                    + "anything slowly going wrong that no single day would reveal?")
+public class PaymentsServiceTwin { /* @Trait fields */ }</code></pre>
+
+    <p>The trick is in the trait contracts, which are written in SRE
+    language and encode hard-won wisdom directly into the state rules:
+    <em>“trust recovers slower than it breaks — two clean weeks per ten
+    points, never instantly.”</em> Tribal knowledge stops being tribal
+    the moment it becomes the rule a field is governed by.</p>
+
+    <p>Deterministic <code>@CodeFunction</code>s pre-digest the telemetry
+    — RSS trends, p99 drift, deploy outcomes, cron load — and the
+    <code>LOCAL</code> tier updates each twin hourly from those digests.
+    Zero cloud tokens for routine bookkeeping.</p>
+
+    <h3>Worry travels along the dependency graph</h3>
+
+    <p>When the database twin's outlook darkens, its dependents hear
+    about it — <em>before</em> their own error budgets start burning. The
+    dependency graph is the social graph:
+    <code>phaseManager().broadcast(dbIncidentEvent, pipeline)</code> with
+    <code>BlastRadius.RELATIONSHIP</code> and
+    <code>AttenuationModel.RELATIONAL</code>, so impact decays with
+    topological distance. Cascading risk assessment, ahead of cascading
+    failure.</p>
+
+    <h3>The 3 a.m. reflection</h3>
+
+    <p>The internal loop runs at three in the morning, as is traditional
+    for worrying — but only after six quiet hours
+    (<code>loopQuietPeriodHours = 6</code>): no philosophising
+    mid-incident. The loop is where slow rot becomes visible — the leak,
+    the drift, the creeping p99 that no single day would reveal. A twin
+    whose deep loop revises its beliefs is a twin raising its hand.</p>
+
+    <h3>Deterministic governance, as always</h3>
+
+<pre><code>@PersonaSubscriber
+public class FleetGovernor {
+
+    @OnPersonaEvent(persona = ServiceTwin.class,
+                    type = PersonaEventType.THRESHOLD_CROSSED,
+                    trait = "degradation_suspicion", threshold = 75,
+                    direction = Direction.ABOVE)
+    public void onSuspicion(TraitChangeEvent&lt;ServiceTwin&gt; e) {
+        tickets.open(e);
+    }
+
+    @OnPersonaEvent(persona = ServiceTwin.class,
+                    type = PersonaEventType.POPULATION_TREND,
+                    trend = Trend.FALLING)
+    public void onFleetMoodDrop(PopulationTrendEvent e) {
+        warRoom.convene(e);
+    }
+}</code></pre>
+
+    <p>For postmortems, <code>report(twin,
+    EvolutionWindow.lastDays(30))</code> shows when the twin's belief in
+    its own health diverged from the dashboards and which neighbours saw
+    it coming, and <code>customReport(...)</code> drafts the narrative
+    from the diary entries. Even decommissioned services remain
+    consultable via <code>loadRetired()</code> — a queryable fleet
+    graveyard, which is morbid and extremely useful.</p>
+  </section>
+
+  <section>
+    <h2>Why It Is Unprecedented</h2>
+
+    <p>This is the senior engineer's hunch, industrialised — with reasons
+    attached. Suspicion defined as a pattern across deploys, rather than
+    a threshold on a gauge, can raise its hand days before any alert
+    fires. The diary is searchable years later and survives every
+    resignation. And the design's quiet generality is worth noticing:
+    PrOOPt States turns out to be state management for everything that
+    has a story.</p>
+  </section>
+
+  <section>
+    <h2>The Fine Print</h2>
+
+    <p>A twin's beliefs are an interpretive layer <em>over</em>
+    telemetry, never a replacement for it; alerting on raw SLOs remains
+    primary. Anthropomorphism is the interface, not the ontology — trait
+    contracts must stay tied to observable evidence (“raise when RSS
+    trends up”), or the diary degenerates into fiction. And trust the
+    system only after it runs in shadow mode and earns a precision
+    record. Rollout discipline is part of the design, not an apology.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="policy-wind-tunnel.html">← The Policy Wind Tunnel</a>
+  <a href="../use-cases.html">All use cases →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>
