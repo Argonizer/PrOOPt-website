@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Policy Wind Tunnel — PrOOPt Use Cases</title>
+<meta name="description" content="The Policy Wind Tunnel: census-calibrated synthetic societies for decision rehearsal, built on PrOOPt States.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="../index.html">
+    <span class="wordmark"><img src="../PrOOPt States.png" style="height:120px; width:auto" alt="PrOOPt"/></span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="../index.html">Introduction</a> ·
+    <a href="../getting-started.html">Getting Started</a> ·
+    <a href="../tutorials.html">Tutorials</a> ·
+    <a href="../states-getting-started.html">States: Getting Started</a> ·
+    <a href="../states-tutorials.html">States: Tutorials</a> ·
+    <a href="../use-cases.html" aria-current="page">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Use Case · States No. 2</p>
+    <h1>The Policy Wind Tunnel</h1>
+    <p class="lede">Synthetic societies for decision rehearsal.</p>
+  </header>
+
+  <section>
+    <h2>The Story</h2>
+
+    <p>No aircraft flies before the wind tunnel. Yet every policy, price
+    change, and public-health message still launches straight into the
+    storm — tested on nobody, or tested on you.</p>
+
+    <p>Institutions that move markets and populations can model
+    aggregates, and they can sample opinions. What they cannot do is
+    <em>rehearse the decision</em>: subject a population of
+    heterogeneous, memory-bearing individuals to an intervention, watch
+    belief and behaviour evolve day by day — and then rewind the world
+    and try the other version of the announcement.</p>
+
+    <p>The Policy Wind Tunnel does exactly that. It instantiates a
+    census-calibrated synthetic population of <code>@Persona</code>
+    citizens, subjects it to interventions via targeted broadcasts, lets
+    second-order discourse spread through rumour physics, and reads the
+    results as longitudinal, source-attributed state history. Every
+    opinion shift is a database row with a cause.</p>
+  </section>
+
+  <section>
+    <h2>How It Is Built</h2>
+
+    <h3>A population with a census-shaped spine</h3>
+
+<pre><code>List&lt;Citizen&gt; city = citizens.generate()
+        .limit(50_000)
+        .seed("Adult residents of a mid-size rust-belt metro, 2026")
+        .distribute(Segment.of("suburban homeowners, fixed-rate mortgages", 0.34)
+                .pinTrait("housing_status", "OWNER_FIXED")
+                .normalDistribution("rate_sensitivity", 35, 12)
+                .normalDistribution("institutional_trust", 48, 15)
+                .build())
+        .distribute(Segment.of("urban renters, gig income", 0.22)
+                .pinTrait("employment_mode", "GIG")
+                .normalDistribution("rate_sensitivity", 72, 9)
+                .build())
+        .build();</code></pre>
+
+    <p>Segment proportions, pinned traits, and normal distributions
+    reproduce census margins <em>by construction</em> — not by hoping the
+    model's priors land in the right place.</p>
+
+    <h3>Citizens with inner lives</h3>
+
+<pre><code>@Persona(
+    value = "An adult resident of a mid-size metro with realistic financial "
+          + "life, media diet, social ties, and bounded attention.",
+    evolutionSchedule = "@daily",
+    evolutionDescription = "Attention to last week's news decays; lived "
+          + "financial pressure (rent, groceries, rate resets) reasserts "
+          + "itself over headlines.",
+    internalLoop = true, loopSchedule = "@daily",
+    loopDepth = LoopDepth.MODERATE,
+    loopDescription = "Reconcile what I heard today with what I believe and "
+          + "what my neighbours are saying; settle on what I'd tell a pollster.")
+public class Citizen {
+
+    @Trait("Trust in public institutions, 0 (none) to 100 (full).")
+    private int institutionalTrust;
+
+    @Trait("Perceived personal financial pressure, 0–100.")
+    private int financialPressure;
+
+    @Trait("Current belief about the rate decision, in the citizen's own words.")
+    private String narrativeBelief;
+
+    @Trait(value = "Private running memory of recent events and conversations.",
+           index = false)
+    private String memory;
+}</code></pre>
+
+    <h3>Interventions as targeted broadcasts; discourse as physics</h3>
+
+    <p>The direct shock is delivered with a predicate —
+    <code>broadcast(rateAnnouncement, "media_diet = 'EVENING_NEWS'")</code>
+    — and then secondary transmission spreads through social ties via
+    <code>EventPipeline</code> with <code>BlastRadius.RELATIONSHIP</code>
+    and <code>AttenuationModel.RUMOUR</code>. Which means misinformation
+    epidemiology — how a clear message curdles into a garbled one as it
+    crosses a population — is an off-the-shelf experiment.</p>
+
+    <h3>Readouts that are econometrics, not vibes</h3>
+
+    <p><code>EvolutionReport</code> decomposes each opinion shift by
+    <code>UpdateSource</code>: direct effect (<code>EXTERNAL</code>),
+    social contagion (<code>EVENT</code>), private reflection
+    (<code>INTERNAL_LOOP</code>), and background drift
+    (<code>EVOLUTION</code>). Cohort comparisons run through
+    <code>reportWhere(...)</code> windows — treatment versus control —
+    and aggregate claims always reconcile down to individual histories.
+    Best of all, because <code>trackHistory = true</code> makes timelines
+    forkable, you can restore the world to the day before the
+    announcement and try the other wording. Survey panels cannot rewind.
+    This can.</p>
+  </section>
+
+  <section>
+    <h2>Why It Is Unprecedented</h2>
+
+    <p>Agent-based models have heterogeneous agents but hand-coded,
+    brittle rules. LLM-agent simulations have rich agents but opaque
+    transcripts and irreproducible runs. The Wind Tunnel has both halves:
+    rich, language-driven citizens whose every belief transition is a
+    source-attributed row in <code>prooopt_persona_history</code>. It is
+    computational social science with a chain of custody — and every
+    experiment is a forkable timeline.</p>
+  </section>
+
+  <section>
+    <h2>The Fine Print</h2>
+
+    <p>Synthetic citizens are not citizens. Validity is bounded by the
+    LLM's social priors and your calibration data; findings are
+    hypotheses for real-world testing, not forecasts with confidence
+    intervals. LLM priors carry cultural skew, so segment seeds and
+    population rules must be calibrated per society and documented in the
+    study record. And the dual-use concern is real: the same instrument
+    that hardens a public-health message could tune a manipulative one.
+    Deployments should carry use governance — and PrOOPt's
+    audit-everything posture is the enforcement surface. Wind tunnels do
+    not promise the flight; they catch the wing that falls off.
+    Institutions buy wind tunnels.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="living-world.html">← The World That Remembers</a>
+  <a href="machine-diaries.html">Next: Machine Diaries →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

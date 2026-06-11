@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Developer Tutorials — PrOOPt</title>
+<meta name="description" content="Structured developer tutorials for PrOOPt: @PromptFunction, autoboxing, @CodeFunction, the orchestrator, PromptStream, plan modes, and sensitive data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="index.html">
+    <span class="wordmark"><img src="PrOOPt.png" style="height:120px; width:auto" alt="PrOOPt"/></span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html">Introduction</a> ·
+    <a href="getting-started.html">Getting Started</a> ·
+    <a href="tutorials.html" aria-current="page">Tutorials</a> ·
+    <a href="states-getting-started.html">States: Getting Started</a> ·
+    <a href="states-tutorials.html">States: Tutorials</a> ·
+    <a href="use-cases.html">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Chapter Three</p>
+    <h1>Developer Tutorials</h1>
+    <p class="lede">Six short lessons. Each one builds on the last,
+    and none of them requires a whiteboard.</p>
+  </header>
+
+  <section>
+    <h2>Lesson 1 — Autoboxing, or: Your Return Type Is the Contract</h2>
+
+    <p>In Lesson 0 (the <a href="getting-started.html">Getting Started</a>
+    page — you did read it, we saw you) you wrote a method that returned
+    <code>null</code> and got a <code>LocalDate</code> back. The machinery
+    behind that is the <code>PrOOPtAutoBoxer</code>, and it is patient
+    with models the way a good teacher is patient with students.</p>
+
+    <ul>
+      <li><strong>Primitives</strong> — strips commas, strips trailing
+      <code>.0</code>, extracts the first number from prose. If the model
+      says “The answer is 42, naturally,” you get <code>42</code>.</li>
+      <li><strong>Booleans</strong> — <code>yes/no</code>,
+      <code>true/false</code>, <code>1/0</code>, case-insensitive.</li>
+      <li><strong>Enums</strong> — scans the prose for the first matching
+      constant name, case-insensitive.</li>
+      <li><strong><code>java.time</code></strong> — ISO-8601 parsing for
+      <code>LocalDate</code>, <code>LocalDateTime</code>,
+      <code>ZonedDateTime</code>.</li>
+      <li><strong>Collections, Maps, POJOs</strong> — Jackson JSON, with
+      markdown fence stripping (because models do love a good
+      <code>```json</code> fence).</li>
+    </ul>
+
+    <p>The practical upshot: design your <code>@PromptFunction</code>
+    signatures the way you design any API. The richer and more honest the
+    return type, the more PrOOPt can enforce on your behalf.</p>
+
+<pre><code>@PromptFunction(
+    model = ModelTier.CLOUD_FAST,
+    prompt = "Classify the urgency of this support ticket: {ticket}"
+)
+public Urgency classify(String ticket) {
+    return null; // Urgency is an enum: LOW, NORMAL, HIGH, FIRE
+}</code></pre>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 2 — <code>@CodeFunction</code> as Knowledge Injection</h2>
+
+    <p>Every <code>@CodeFunction</code> does two jobs. The obvious one:
+    it computes something correctly, every time, for free. The subtle one:
+    it <em>extends the LLM's effective capability beyond its training
+    boundary</em>. Your proprietary risk model, your internal scoring
+    formula, your novel algorithm — none of these exist in any training
+    corpus. Register them as <code>@CodeFunction</code>s and the
+    orchestrator can reason about them and invoke them as first-class
+    tools, without ever seeing inside.</p>
+
+<pre><code>@CodeFunction(
+    description = "Computes the bank's internal credit score "
+                + "from a structured application"
+)
+public static CreditScore scoreApplication(LoanApplication app) {
+    // Twenty years of actuarial wisdom, zero tokens.
+    return CreditModel.evaluate(app);
+}</code></pre>
+
+    <p>The LLM reads the loan application, classifies the risk tier, and
+    decides the formula is needed. The <code>@CodeFunction</code> computes
+    it deterministically. The LLM never sees the formula — only the
+    result. Your trade secret is used but never exposed.</p>
+
+    <aside class="note">
+      <span class="note-title">A word from the mug</span>
+      Write the <code>description</code> for the orchestrator the way you
+      would write a Javadoc for a new teammate: what it does, what it
+      needs, when to reach for it. The description is how the LLM finds
+      the tool. A vague description is a tool lost down the back of the
+      sofa.
+    </aside>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 3 — The Orchestrator and Its DAG</h2>
+
+    <p>When you call <code>orchestrate(...)</code>, the orchestrator runs
+    a tidy little pipeline before any work happens:</p>
+
+<pre><code>User input
+   │
+   ▼ Phase 1 — Discovery (LOCAL model)
+List&lt;String&gt; capabilities
+   │
+   ▼ Phase 2 — Matching (TF-IDF cosine similarity)
+List&lt;ToolDescriptor&gt; (≤ maxTools)
+   │
+   ▼ Phase 3 — Planning (CLOUD_FAST model)
+ExecutionPlan (JSON)
+   │
+   ▼ Wave-parallel execution
+Result</code></pre>
+
+    <p>The plan is a DAG. Independent subexpressions fire concurrently;
+    cross-stream dependencies resolve non-blocking via
+    <code>CompletableFuture</code>. You declare appetite for parallelism
+    once, on the orchestrator:</p>
+
+<pre><code>@PromptOrchestrator(
+    prompt = "You are a legal analyst.",
+    planMode = PlanMode.DYNAMIC,
+    model = ModelTier.CLOUD_ADVANCED,
+    parallel = true
+)
+@PromptFunctionScan
+public class LegalAnalyzer extends BaseOrchestrator {
+    public static void main(String[] args) {
+        PrOOPt.run(LegalAnalyzer.class, args);
+    }
+}</code></pre>
+
+    <p>A worked example from the library itself: ask the Linear System
+    solver for help and the LLM does not solve the equations. It
+    identifies the problem type, selects the strategy, and plans a DAG
+    where Gaussian elimination runs as a <code>@CodeFunction</code> —
+    deterministic, reproducible, provably correct. The LLM planned the
+    solution. Java computed it. The result is guaranteed by the compiler,
+    not by probability.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 4 — <code>PromptStream</code>, the Pipeline</h2>
+
+    <p>Sometimes you do not need a planner; you already know the order of
+    operations. <code>PromptStream</code> gives you a fluent pipeline
+    where deterministic and LLM-backed steps snap together like train
+    cars:</p>
+
+<pre><code>String summary = PromptStream.of(contractText)
+        .pipe(proxied::normalizeWhitespace)   // @CodeFunction
+        .pipe(proxied::generateSummary)       // @PromptFunction CLOUD_ADVANCED
+        .withTimeout(5_000)
+        .execute();</code></pre>
+
+    <p>Each <code>pipe</code> keeps its own annotation's governance: the
+    normalizer runs as plain Java, the summary call goes to the cloud
+    tier it declared, and the whole journey lands in the audit log under
+    one trace id.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 5 — Plan Modes: STATIC vs DYNAMIC</h2>
+
+    <p><code>@PromptOrchestrator(planMode = ...)</code> controls whether
+    the execution plan is cached and reused. This is the difference
+    between paying a planner once and paying a planner hourly.</p>
+
+    <table>
+      <thead>
+        <tr><th>Mode</th><th>Cloud plan-generation calls</th><th>Best for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>STATIC</code> (default)</td><td>1 total (first call)</td>
+            <td>Batch and repetitive workloads — 10,000 loan applications share one plan</td></tr>
+        <tr><td><code>DYNAMIC</code></td><td>1 per call</td>
+            <td>Conversational agents, genuinely varied inputs</td></tr>
+      </tbody>
+    </table>
+
+    <p>Under <code>STATIC</code>, the cached artifact is a <em>plan
+    template</em> with <code>${input}</code> placeholders retained. On
+    each run, <code>PlanInstantiator</code> binds the live input and
+    assigns a fresh trace id. A warm hit skips discovery and planning
+    entirely:</p>
+
+<pre><code>[PROOOPT][PLAN_CACHE][HIT] key='Analyze this loan…' similarity=1.00
+        → skipping Cloud LLM
+[PROOOPT][ORCHESTRATOR][SUMMARY] trace=… mode=STATIC cached=true
+        plan_generation=0ms cloud_calls=1 …</code></pre>
+
+    <p>Plans are memoised by input hash, and the cache strategy can match
+    exact text, semantic similarity, or intent. If the phrase “a JIT
+    compiler for cognition” just crossed your mind, you will enjoy the
+    <a href="use-cases/promptjit.html">PromptJIT use case</a>.</p>
+  </section>
+
+  <hr class="stars">
+
+  <section>
+    <h2>Lesson 6 — Keeping Secrets: <code>@SensitiveData</code> and the Audit Log</h2>
+
+    <p>Mark a parameter as sensitive and the audit log replaces the value
+    with your label. The model still receives the real value — the
+    <em>log</em> is what stays clean:</p>
+
+<pre><code>@PromptFunction(model = ModelTier.CLOUD_ADVANCED, ...)
+public String generateSummary(
+        @SensitiveData(label = "***CONTRACT-TEXT***") String text) {
+    return null; // PrOOPt supplies the result
+}</code></pre>
+
+    <p>And when data must not reach the cloud at all, do not write a
+    policy document. Write an annotation.
+    <code>@PromptFunction(model&nbsp;=&nbsp;ModelTier.LOCAL)</code> means
+    this data does not leave the JVM. Period. The developer declared it.
+    The annotation enforces it. The audit log proves it. Your compliance
+    officer can read the code and verify the boundary — possibly the
+    first time anyone has handed them good news in annotation form.</p>
+
+    <p>Audit entries are written by the
+    <code>io.github.argonizer.prooopt.audit</code> logger with daily and
+    50&nbsp;MB rotation, with trace ids and per-run cost estimates. Every
+    decision is reconstructable. The compliance artifact is a by-product
+    of execution.</p>
+  </section>
+
+  <section>
+    <h2>Graduation</h2>
+
+    <p>That is the core curriculum. You can now declare authority zones,
+    inject proprietary knowledge as tools, let an orchestrator plan
+    without computing, pipeline steps, amortise planning costs, and keep
+    your secrets out of the logs. When you are ready to see how far these
+    primitives stretch, the <a href="use-cases.html">Use Cases</a> section
+    is where things get genuinely strange — in the best way. Or meet the
+    other half of the family in
+    <a href="states-getting-started.html">PrOOPt States</a>.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="getting-started.html">← Getting Started</a>
+  <a href="states-getting-started.html">Next: States — Getting Started →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

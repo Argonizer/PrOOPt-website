@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PromptJIT — PrOOPt Use Cases</title>
+<meta name="description" content="PromptJIT: the self-cheapening AI runtime — a profile-guided JIT compiler for cognition, built on PrOOPt core.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line"><span>Object-Oriented Prompt Engineering for Java</span><span>Est. 2026 · MIT License</span></div>
+  <a class="brand" href="../index.html">
+    <span class="wordmark"><img src="../PrOOPt.png" style="height:120px; width:auto" alt="PrOOPt"/></span>
+  </a>
+  <p class="tagline">“A Java library that keeps LLMs on a need-to-know basis.”</p>
+  <nav class="site-nav" aria-label="Main">
+    <a href="../index.html">Introduction</a> ·
+    <a href="../getting-started.html">Getting Started</a> ·
+    <a href="../tutorials.html">Tutorials</a> ·
+    <a href="../states-getting-started.html">States: Getting Started</a> ·
+    <a href="../states-tutorials.html">States: Tutorials</a> ·
+    <a href="../use-cases.html" aria-current="page">Use Cases</a>
+  </nav>
+</header>
+
+<main>
+
+<article>
+  <header>
+    <p class="kicker">Use Case · Core No. 2</p>
+    <h1>PromptJIT</h1>
+    <p class="lede">The self-cheapening AI runtime.</p>
+  </header>
+
+  <section>
+    <h2>The Story</h2>
+
+    <p>Every production AI system today shares one universal, slightly
+    embarrassing property: the ten-thousandth request costs exactly as
+    many tokens and exactly as much money as the first. The system never
+    learns that it has seen this kind of request before. It pays full
+    tuition for the same lesson, forever.</p>
+
+    <p>Java solved this problem decades ago. HotSpot made Java fast by
+    noticing what runs often and compiling it down. PromptJIT makes AI
+    cheap the same way — except what gets compiled is thought.</p>
+
+    <p>In PromptJIT, <code>CLOUD_ADVANCED</code> is the optimising
+    compiler, <code>LOCAL</code> is the CPU, and an autoboxing failure is
+    a deoptimisation trap. The cost of serving a request decays as a
+    function of how often the system has seen its kind — asymptotically
+    approaching local inference, and ultimately plain Java.</p>
+  </section>
+
+  <section>
+    <h2>How It Is Built</h2>
+
+    <p>The analogy is not decoration; it is a structural correspondence,
+    and every component exists in PrOOPt today:</p>
+
+    <ul>
+      <li><strong>The profiler</strong> — the plan cache with
+      <code>PlanCacheStrategy.INTENT</code> clusters requests by intent,
+      not bytes, and its hit statistics reveal the hot paths of
+      cognition.</li>
+      <li><strong>The compiler</strong> — a <code>CLOUD_ADVANCED</code>
+      function (with thinking enabled) studies successful traces of a hot
+      intent and writes a rule-prompt that a small local model can
+      follow.</li>
+      <li><strong>The promotion gate</strong> — a deterministic
+      <code>@CodeFunction</code> replays the candidate rule against a
+      golden set and promotes it only above a pass-rate threshold.</li>
+      <li><strong>The deopt trap</strong> — if the local tier's output
+      fails autoboxing or schema validation, the request falls back up
+      the ladder and the rule goes back to the shop.</li>
+    </ul>
+
+<pre><code>@PromptOrchestrator(
+        prompt = "Resolve the customer-operations request using registered tools.",
+        planMode = PlanMode.STATIC,
+        planCacheStrategy = PlanCacheStrategy.INTENT,
+        planCacheSize = 2000,
+        planCacheTtl = -1,
+        allowDynamic = true,
+        dynamicFunctionModel = ModelTier.CLOUD_FAST,
+        maxDynamicFunctions = 3
+)
+public Resolution handle(String request) { return null; }</code></pre>
+
+<pre><code>public class PromptJitCompiler {
+
+    @PromptFunction(model = ModelTier.CLOUD_ADVANCED, thinking = true,
+            prompt = "You are an optimising compiler. For hot intent {profile}, "
+                   + "study these successful cloud-handled traces: {exemplars}. "
+                   + "Write a rule-prompt that a small local model can follow...")
+    public String compileRuleForLocal(IntentProfile profile, String exemplars,
+                                      String deoptCases) { return null; }
+
+    @CodeFunction(description = "Run the compiled rule against the golden "
+            + "replay set on the LOCAL tier; promote only if pass-rate >= 0.98")
+    public PromotionVerdict verifyAndPromote(String candidateRule, String intent) { /* … */ }
+}</code></pre>
+  </section>
+
+  <section>
+    <h2>Why It Is Unprecedented</h2>
+
+    <p>Vendor prompt caching caches <em>tokens</em>. PromptJIT caches and
+    recompiles <em>strategy</em> — what to do, in what order, with which
+    tools, under which rules. Distillation transfers capability by
+    gradient descent over weeks; PromptJIT transfers it by writing
+    legible instructions in minutes — reviewable in a diff, reversible by
+    cache eviction. It is distillation without gradient descent, and the
+    cost-decay curve falls straight out of the audit log you were already
+    keeping. The endgame is lovely: when a compiled rule becomes stable
+    enough, it is a candidate for transcription into an actual
+    <code>@CodeFunction</code>. Cognition crystallises into software.</p>
+  </section>
+
+  <section>
+    <h2>The Fine Print</h2>
+
+    <p>The ladder's bottom rungs only fit recurring, structured work;
+    genuinely novel and open-ended requests will live at cloud tiers
+    forever, and that is fine — the promise is about the distribution's
+    fat head. Compiled rules inherit the local model's ceiling, so the
+    promotion gate, not optimism, decides what they carry. And intent
+    drift is the moral equivalent of profile pollution: drift detection
+    and evidence-based eviction are mandatory, not optional.</p>
+  </section>
+</article>
+
+</main>
+
+<nav class="pager" aria-label="Pagination">
+  <a href="iron-interlock.html">← Iron Interlock</a>
+  <a href="boundary-refinery.html">Next: The Boundary Refinery →</a>
+</nav>
+
+<footer class="colophon">
+  <p>PrOOPt — Object-Oriented Prompt Engineering for Java</p>
+  <p>Copyright © 2026 Akshay Rawal — MIT License</p>
+  <p><em>Because great ideas often have humble beginnings.</em></p>
+</footer>
+
+</body>
+</html>

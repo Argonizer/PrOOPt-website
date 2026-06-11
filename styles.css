@@ -1,0 +1,284 @@
+/* PrOOPt — plain black & white, vintage kids' magazine. Less is more. */
+
+:root {
+  --ink: #000;
+  --paper: #fff;
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--paper); }
+
+body {
+  font-family: "Times New Roman", Times, serif;
+  color: var(--ink);
+  background: var(--paper);
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+  line-height: 1.65;
+  font-size: 1.06rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Masthead                                                            */
+/* ------------------------------------------------------------------ */
+
+.masthead {
+  text-align: center;
+  border-bottom: 4px double var(--ink);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.masthead .issue-line {
+  display: flex;
+  justify-content: space-between;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.brand .wordmark {
+  display: inline-block;
+  line-height: 1;
+}
+
+.brand .wordmark img {
+  display: block;
+  height: 120px;
+  width: auto;
+}
+
+.tagline {
+  font-style: italic;
+  margin: 0.5rem 0 0.75rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Navigation                                                          */
+/* ------------------------------------------------------------------ */
+
+nav.site-nav {
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+  border-top: 1px solid var(--ink);
+  padding-top: 0.5rem;
+}
+
+nav.site-nav a {
+  color: var(--ink);
+  text-decoration: none;
+  margin: 0 0.45rem;
+  white-space: nowrap;
+}
+
+nav.site-nav a:hover { text-decoration: underline; }
+
+nav.site-nav a[aria-current="page"] {
+  border-bottom: 2px solid var(--ink);
+}
+
+/* ------------------------------------------------------------------ */
+/* Headings & text                                                     */
+/* ------------------------------------------------------------------ */
+
+h1, h2, h3 { line-height: 1.25; }
+
+h1 {
+  font-size: 1.9rem;
+  text-align: center;
+  margin: 1.5rem 0 0.5rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+  margin-top: 2.25rem;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.2rem;
+}
+
+h3 { font-size: 1.15rem; margin-top: 1.75rem; }
+
+.kicker {
+  text-align: center;
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.lede {
+  text-align: center;
+  font-style: italic;
+  font-size: 1.1rem;
+  margin: 0.25rem auto 1.5rem;
+  max-width: 34rem;
+}
+
+/* Asterisk divider, like the zine */
+.stars {
+  border: none;
+  text-align: center;
+  margin: 2rem 0;
+}
+.stars::after {
+  content: "\2731\2003\2731\2003\2731"; /* ✱ ✱ ✱ */
+  font-size: 0.9rem;
+  letter-spacing: 0.3em;
+}
+
+/* ------------------------------------------------------------------ */
+/* Code                                                                */
+/* ------------------------------------------------------------------ */
+
+code, pre, kbd, samp {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-size: 0.84em;
+}
+
+pre {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  line-height: 1.55;
+  margin: 1.5rem 0.4rem 1.9rem 0;
+}
+
+pre code { font-size: 0.84rem; }
+
+/* ------------------------------------------------------------------ */
+/* Articles, asides, figures                                           */
+/* ------------------------------------------------------------------ */
+
+article + article { margin-top: 2.5rem; }
+
+aside.note {
+  border: 2px dashed var(--ink);
+  padding: 0.75rem 1rem;
+  margin: 1.75rem 0;
+  font-size: 0.98rem;
+}
+
+aside.note .note-title {
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+blockquote {
+  margin: 1.5rem 1.25rem;
+  padding-left: 1rem;
+  border-left: 4px solid var(--ink);
+  font-style: italic;
+}
+
+figure.mug-figure { text-align: center; margin: 2rem 0; }
+figure.mug-figure img { height: 200px; width: auto; }
+figure.mug-figure figcaption {
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tables                                                              */
+/* ------------------------------------------------------------------ */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+  font-size: 0.98rem;
+}
+
+th, td {
+  border: 1px solid var(--ink);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--ink);
+}
+
+/* ------------------------------------------------------------------ */
+/* Cards (use-case index)                                              */
+/* ------------------------------------------------------------------ */
+
+.card {
+  border: 2px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0.4rem 1.9rem 0;
+}
+
+.card h3 { margin-top: 0; }
+
+.card .series {
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+}
+
+.card a { color: var(--ink); }
+
+/* ------------------------------------------------------------------ */
+/* Pager (prev/next)                                                   */
+/* ------------------------------------------------------------------ */
+
+nav.pager {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  border-top: 1px solid var(--ink);
+  padding-top: 0.75rem;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+}
+
+nav.pager a { color: var(--ink); text-decoration: none; }
+nav.pager a:hover { text-decoration: underline; }
+
+/* ------------------------------------------------------------------ */
+/* Footer                                                              */
+/* ------------------------------------------------------------------ */
+
+footer.colophon {
+  margin-top: 3.5rem;
+  border-top: 4px double var(--ink);
+  padding-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+footer.colophon p { margin: 0.3rem 0; }
+
+a { color: var(--ink); }
+
+/* Lists breathe a little */
+li { margin: 0.3rem 0; }
+
+@media (max-width: 540px) {
+  .brand .wordmark img { height: 72px; }
+  .masthead .issue-line { font-size: 0.7rem; }
+  pre { box-shadow: 3px 3px 0 var(--ink); }
+}
